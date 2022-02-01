@@ -1,0 +1,63 @@
+{
+    "variables": {
+        "applicaiton_name": "softobiz",
+        "application_version": "1.0.0",
+        "region": "ap-south-1",
+        "instance_type": "t2.micro",
+        "source_ami": "ami-03fa4afc89e4a8a09",
+        "ami_shared_accounts": "119532087777"
+
+    },
+    "builders": [
+        {
+            "name": "{{user `applicaiton_name`}}",
+            "type": "amazon-ebs",
+            "ssh_username": "ec2-user",
+            "force_deregister": "true",
+            "force_delete_snapshot": "true",
+            "associate_public_ip_address": "true",
+            "region": "{{user `region`}}",
+            "source_ami": "{{user `source_ami`}}",
+            "instance_type": "{{user `instance_type`}}",
+            "ami_name": "{{user `applicaiton_name`}}-{{user `application_version`}}",
+            "ami_users": "{{user `ami_shared_accounts`}}",
+            "tags": {
+                "Name": "{{user `applicaiton_name`}}",
+                "createdBy": "Packer"
+            }
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "inline": [
+                "sudo amazon-linux-extras install epel"
+            ]
+        },
+        {
+            "type": "shell",
+            "inline": [
+                "sudo yum install unzip wget curl git -y"
+            ]
+        },
+        {
+            "type": "shell",
+            "inline": [
+                "sudo yum install ansible -y"
+            ]
+        },
+        {
+            "type": "shell",
+            "script": "./copyCode.sh"
+
+        },
+        {
+            "type": "ansible-local",
+            "playbook_file": "./timezone.yml",
+            "extra_arguments": [
+                "-vvvv"
+            ]
+        }
+
+    ]
+}
